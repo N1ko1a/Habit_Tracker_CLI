@@ -237,6 +237,28 @@ func parseMonth(monthString string) (time.Month, error) {
 	return month, nil
 }
 
+func compleatedHabit(name string, year int, month time.Month, day int) error {
+
+	ctx := context.TODO()
+	Database := mongoClient.Database("HabitTracker")
+	Collection := Database.Collection("Habits")
+
+	// Define the filter to find the habit to be edited
+	filter := bson.D{{Key: "name", Value: name}, {Key: "year", Value: year}, {Key: "month", Value: month}}
+
+	simbol := "■ "
+	// Define the update to set the new name
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: fmt.Sprintf("boxes.%d", day), Value: simbol}}}}
+
+	// Perform the update operation
+	_, err := Collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("error updating habit name: %v", err)
+	}
+
+	return nil
+}
+
 func main() {
 
 	// Povezivanje sa bazom podataka
@@ -259,16 +281,9 @@ func main() {
 	t := time.Now()
 	year := t.Year()
 	month := t.Month()
-	// day := t.Day()
+	day := t.Day()
 	numOfDays := daysInMonth(year, month)
 
-	// simbol := "■ "
-	// boxes[day] = simbol
-
-	// for i := 0; i < len(boxes); i++ {
-	// 	fmt.Printf("%s ", boxes[i])
-	// }
-	// fmt.Println()
 	args := os.Args
 	if len(args) >= 2 && args[1] == "add" {
 		if len(args) == 3 {
@@ -368,6 +383,33 @@ func main() {
 
 			// Call the function
 			deleteHabit(args[2], year, month)
+		}
+	} else if len(args) >= 2 && args[1] == "compleated" {
+		if len(args) == 3 {
+
+			compleatedHabit(args[2], year, month, day-1)
+		} else {
+			// Parse the month string into a time.Month value
+			month, err := parseMonth(args[4])
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+
+			// Convert the integer argument to a string
+			year, err := strconv.Atoi(args[3])
+			if err != nil {
+				fmt.Println("Error occurred:", err)
+				return
+			}
+
+			day, err := strconv.Atoi(args[5])
+			if err != nil {
+				fmt.Println("Error occurred:", err)
+				return
+			}
+			// Call the function
+			compleatedHabit(args[2], year, month, day-1)
 		}
 	} else {
 		getCurrentHabits(year, month)
