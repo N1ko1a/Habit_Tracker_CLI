@@ -1,6 +1,6 @@
 # Habit Tracker
 
-This is a simple habit tracker project that allows you to manage your habits through various commands. 
+The habit tracker gives us the ability to track our habits throughout the day and easily mark them as completed. This allows us to review our activity for the entire month or even multiple months, providing us with detailed insight into our productivity and engagement.
 
 ## Usage
 
