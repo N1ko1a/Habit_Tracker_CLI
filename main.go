@@ -193,6 +193,23 @@ func editHabitName(name string, year int, month time.Month, newName string) erro
 	return nil
 }
 
+func deleteHabit(name string, year int, month time.Month) error {
+	ctx := context.TODO()
+	Database := mongoClient.Database("HabitTracker")
+	Collection := Database.Collection("Habits")
+
+	// Define the filter to find the habit to be deleted
+	filter := bson.D{{Key: "name", Value: name}, {Key: "year", Value: year}, {Key: "month", Value: month}}
+
+	// Perform the deletion operation
+	_, err := Collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return fmt.Errorf("error deleting habit: %v", err)
+	}
+
+	return nil
+}
+
 // Function to parse month string into time.Month
 func parseMonth(monthString string) (time.Month, error) {
 	// List of months
@@ -219,6 +236,7 @@ func parseMonth(monthString string) (time.Month, error) {
 
 	return month, nil
 }
+
 func main() {
 
 	// Povezivanje sa bazom podataka
@@ -293,6 +311,28 @@ func main() {
 
 			// Call the function
 			editHabitName(args[2], id, month, args[5])
+		}
+	} else if len(args) >= 2 && args[1] == "delete" {
+		if len(args) == 3 {
+
+			deleteHabit(args[2], year, month)
+		} else {
+			// Parse the month string into a time.Month value
+			month, err := parseMonth(args[4])
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+
+			// Convert the integer argument to a string
+			id, err := strconv.Atoi(args[3])
+			if err != nil {
+				fmt.Println("Error occurred:", err)
+				return
+			}
+
+			// Call the function
+			deleteHabit(args[2], id, month)
 		}
 	} else {
 
