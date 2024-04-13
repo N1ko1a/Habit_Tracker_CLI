@@ -262,10 +262,6 @@ func main() {
 	// day := t.Day()
 	numOfDays := daysInMonth(year, month)
 
-	var boxes []string
-	for i := 0; i < numOfDays; i++ {
-		boxes = append(boxes, drawBox(1))
-	}
 	// simbol := "■ "
 	// boxes[day] = simbol
 
@@ -275,18 +271,57 @@ func main() {
 	// fmt.Println()
 	args := os.Args
 	if len(args) >= 2 && args[1] == "add" {
-		habitName := args[2]
+		if len(args) == 3 {
+			habitName := args[2]
 
-		// Create a Habit object
-		habit := Habit{
-			Name:  habitName,
-			Boxes: boxes, // Initialize array with 30 empty strings
-			Year:  year,
-			Month: month,
+			var boxes []string
+			for i := 0; i < numOfDays; i++ {
+				boxes = append(boxes, drawBox(1))
+			}
+			// Create a Habit object
+			habit := Habit{
+				Name:  habitName,
+				Boxes: boxes, // Initialize array with 30 empty strings
+				Year:  year,
+				Month: month,
+			}
+
+			// Call addTask with the created Habit object
+			addHabit(habit)
+		} else {
+
+			// Parse the month string into a time.Month value
+			month, err := parseMonth(args[4])
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+
+			// Convert the integer argument to a string
+			year, err := strconv.Atoi(args[3])
+			if err != nil {
+				fmt.Println("Error occurred:", err)
+				return
+			}
+			numOfDays := daysInMonth(year, month)
+
+			habitName := args[2]
+
+			var boxes []string
+			for i := 0; i < numOfDays; i++ {
+				boxes = append(boxes, drawBox(1))
+			}
+			// Create a Habit object
+			habit := Habit{
+				Name:  habitName,
+				Boxes: boxes, // Initialize array with 30 empty strings
+				Year:  year,
+				Month: month,
+			}
+
+			// Call addTask with the created Habit object
+			addHabit(habit)
 		}
-
-		// Call addTask with the created Habit object
-		addHabit(habit)
 	} else if len(args) >= 2 && args[1] == "all" {
 
 		getAllHabits()
@@ -325,17 +360,16 @@ func main() {
 			}
 
 			// Convert the integer argument to a string
-			id, err := strconv.Atoi(args[3])
+			year, err := strconv.Atoi(args[3])
 			if err != nil {
 				fmt.Println("Error occurred:", err)
 				return
 			}
 
 			// Call the function
-			deleteHabit(args[2], id, month)
+			deleteHabit(args[2], year, month)
 		}
 	} else {
-
 		getCurrentHabits(year, month)
 	}
 
