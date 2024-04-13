@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -172,6 +173,52 @@ func getCurrentHabits(year int, month time.Month) {
 	fmt.Println()
 }
 
+func editHabitName(name string, year int, month time.Month, newName string) error {
+	ctx := context.TODO()
+	Database := mongoClient.Database("HabitTracker")
+	Collection := Database.Collection("Habits")
+
+	// Define the filter to find the habit to be edited
+	filter := bson.D{{Key: "name", Value: name}, {Key: "year", Value: year}, {Key: "month", Value: month}}
+
+	// Define the update to set the new name
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "name", Value: newName}}}}
+
+	// Perform the update operation
+	_, err := Collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("error updating habit name: %v", err)
+	}
+
+	return nil
+}
+
+// Function to parse month string into time.Month
+func parseMonth(monthString string) (time.Month, error) {
+	// List of months
+	months := map[string]time.Month{
+		"January":   time.January,
+		"February":  time.February,
+		"March":     time.March,
+		"April":     time.April,
+		"May":       time.May,
+		"June":      time.June,
+		"July":      time.July,
+		"August":    time.August,
+		"September": time.September,
+		"October":   time.October,
+		"November":  time.November,
+		"December":  time.December,
+	}
+
+	// Lookup the month in the map
+	month, ok := months[monthString]
+	if !ok {
+		return 0, fmt.Errorf("invalid month: %s", monthString)
+	}
+
+	return month, nil
+}
 func main() {
 
 	// Povezivanje sa bazom podataka
@@ -225,6 +272,28 @@ func main() {
 	} else if len(args) >= 2 && args[1] == "all" {
 
 		getAllHabits()
+	} else if len(args) >= 2 && args[1] == "edit" {
+		if len(args) == 4 {
+
+			editHabitName(args[2], year, month, args[3])
+		} else {
+			// Parse the month string into a time.Month value
+			month, err := parseMonth(args[4])
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+
+			// Convert the integer argument to a string
+			id, err := strconv.Atoi(args[3])
+			if err != nil {
+				fmt.Println("Error occurred:", err)
+				return
+			}
+
+			// Call the function
+			editHabitName(args[2], id, month, args[5])
+		}
 	} else {
 
 		getCurrentHabits(year, month)
