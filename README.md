@@ -1,6 +1,6 @@
 # Habit Tracker
 
-The habit tracker is simple CLI app that gives us the ability to track our habits throughout the day and easily mark them as completed. This allows us to review our activity for the entire month or even multiple months, providing us with detailed insight into our productivity and engagement.
+The habit tracker gives us the ability to track our habits throughout the day and easily mark them as completed. This allows us to review our activity for the entire month or even multiple months, providing us with detailed insight into our productivity and engagement.
 
 ## Usage
 
@@ -16,6 +16,7 @@ The habit tracker is simple CLI app that gives us the ability to track our habit
 - `Habit add name`: Add habit for the current year and month.
 - `Habit compleated name`: Mark the habit as completed for the current year and month.
 - `Habit compleated name 2024 March 20`: Mark the habit as completed for the specified year, month, and day.
+- `Habit info 2024 March `: Retrieves a graph with all habits for this month and shows their completion throughout the days.
 
 ## Technologies Used
 
