@@ -201,11 +201,18 @@ func deleteHabit(name string, year int, month time.Month) error {
 	Database := mongoClient.Database("HabitTracker")
 	Collection := Database.Collection("Habits")
 
-	// Define the filter to find the habit to be deleted
-	filter := bson.D{{Key: "name", Value: name}, {Key: "year", Value: year}, {Key: "month", Value: month}}
+	// Check if a habit with the given name exists
+	habitFilter := bson.D{{Key: "name", Value: name}, {Key: "year", Value: year}, {Key: "month", Value: month}}
+	habitExists := Collection.FindOne(ctx, habitFilter).Err()
+	if habitExists != nil {
+		if habitExists == mongo.ErrNoDocuments {
+			return fmt.Errorf("habit with name %q does not exist for year: %d and month: %s", name, year, month)
+		}
+		return fmt.Errorf("error checking habit existence: %v", habitExists)
+	}
 
 	// Perform the deletion operation
-	_, err := Collection.DeleteOne(ctx, filter)
+	_, err := Collection.DeleteOne(ctx, habitFilter)
 	if err != nil {
 		return fmt.Errorf("error deleting habit: %v", err)
 	}
@@ -240,18 +247,36 @@ func parseMonth(monthString string) (time.Month, error) {
 	return month, nil
 }
 
+func isValidDay(year int, month time.Month, day int) bool {
+	daysInMonth := daysInMonth(year, month)
+	return day >= 1 && day+1 <= daysInMonth
+}
 func compleatedHabit(name string, year int, month time.Month, day int) error {
-
 	ctx := context.TODO()
 	Database := mongoClient.Database("HabitTracker")
 	Collection := Database.Collection("Habits")
 
+	// Check if the day is valid
+	if !isValidDay(year, month, day) {
+		return fmt.Errorf("invalid day: %d for year: %d and month: %s", day+1, year, month)
+	}
+
+	// Check if a habit with the given name exists
+	habitFilter := bson.D{{Key: "name", Value: name}}
+	habitExists := Collection.FindOne(ctx, habitFilter).Err()
+	if habitExists != nil {
+		if habitExists == mongo.ErrNoDocuments {
+			return fmt.Errorf("habit with name %q does not exist", name)
+		}
+		return fmt.Errorf("error checking habit existence: %v", habitExists)
+	}
+
 	// Define the filter to find the habit to be edited
 	filter := bson.D{{Key: "name", Value: name}, {Key: "year", Value: year}, {Key: "month", Value: month}}
 
-	simbol := "■ "
+	symbol := "■ "
 	// Define the update to set the new name
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: fmt.Sprintf("boxes.%d", day), Value: simbol}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: fmt.Sprintf("boxes.%d", day), Value: symbol}}}}
 
 	// Perform the update operation
 	_, err := Collection.UpdateOne(ctx, filter, update)
@@ -467,7 +492,11 @@ func main() {
 			}
 
 			// Call addTask with the created Habit object
-			addHabit(habit)
+			err := addHabit(habit)
+			if err != nil {
+				fmt.Println("Error: ", err)
+				return
+			}
 		} else {
 
 			// Parse the month string into a time.Month value
@@ -500,7 +529,11 @@ func main() {
 			}
 
 			// Call addTask with the created Habit object
-			addHabit(habit)
+			err = addHabit(habit)
+			if err != nil {
+				fmt.Println("Error: ", err)
+				return
+			}
 		}
 	} else if len(args) >= 2 && args[1] == "all" {
 
@@ -508,7 +541,11 @@ func main() {
 	} else if len(args) >= 2 && args[1] == "edit" {
 		if len(args) == 4 {
 
-			editHabitName(args[2], year, month, args[3])
+			err := editHabitName(args[2], year, month, args[3])
+			if err != nil {
+				fmt.Println("Error: ", err)
+				return
+			}
 		} else {
 			// Parse the month string into a time.Month value
 			month, err := parseMonth(args[4])
@@ -525,12 +562,20 @@ func main() {
 			}
 
 			// Call the function
-			editHabitName(args[2], id, month, args[5])
+			err = editHabitName(args[2], id, month, args[5])
+			if err != nil {
+				fmt.Println("Error: ", err)
+				return
+			}
 		}
 	} else if len(args) >= 2 && args[1] == "delete" {
 		if len(args) == 3 {
 
-			deleteHabit(args[2], year, month)
+			err := deleteHabit(args[2], year, month)
+			if err != nil {
+				fmt.Println("Error", err)
+				return
+			}
 		} else {
 			// Parse the month string into a time.Month value
 			month, err := parseMonth(args[4])
@@ -547,12 +592,20 @@ func main() {
 			}
 
 			// Call the function
-			deleteHabit(args[2], year, month)
+			err = deleteHabit(args[2], year, month)
+			if err != nil {
+				fmt.Println("Error: ", err)
+				return
+			}
 		}
 	} else if len(args) >= 2 && args[1] == "compleated" {
 		if len(args) == 3 {
 
-			compleatedHabit(args[2], year, month, day-1)
+			err := compleatedHabit(args[2], year, month, day-1)
+			if err != nil {
+				fmt.Println("Error: ", err)
+				return
+			}
 		} else {
 			// Parse the month string into a time.Month value
 			month, err := parseMonth(args[4])
@@ -574,7 +627,11 @@ func main() {
 				return
 			}
 			// Call the function
-			compleatedHabit(args[2], year, month, day-1)
+			err = compleatedHabit(args[2], year, month, day-1)
+			if err != nil {
+				fmt.Println("Error: ", err)
+				return
+			}
 		}
 	} else if len(args) >= 2 && args[1] == "info" {
 		month, err := parseMonth(args[3])
