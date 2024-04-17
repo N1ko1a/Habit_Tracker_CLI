@@ -4,8 +4,6 @@ The habit tracker gives us the ability to track our habits throughout the day an
 
 ## Usage
 
-[QuickVideoPrevHabit.webm](https://github.com/N1ko1a/Habit_Tracker_CLI/assets/85966654/cdf077ba-3052-42e8-bd6e-86a702f3e559)
-
 ### Commands:
 
 - `Habit`: Show habits for the current year and month.
@@ -16,10 +14,10 @@ The habit tracker gives us the ability to track our habits throughout the day an
 - `Habit edit name 2024 March newName`: Change habit name to new name for the specified year and month.
 - `Habit add name 2024 March`: Add habit for the specified year and month.
 - `Habit add name`: Add habit for the current year and month.
-- `Habit compleated name`: Mark the habit as completed for the current year and month.
-- `Habit compleated name 2024 March 20`: Mark the habit as completed for the specified year, month, and day.
+- `Habit completed name`: Mark the habit as completed for the current year and month.
+- `Habit completed name 2024 March 20`: Mark the habit as completed for the specified year, month, and day.
 - `Habit info 2024 March `: Retrieves a graph with all habits for this month and shows their completion throughout the days.
-  
+
 ## Technologies Used
 
 - Go
