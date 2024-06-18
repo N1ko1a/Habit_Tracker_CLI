@@ -30,7 +30,7 @@ To run the project locally:
 1. Clone this repository.
 2. Install MongoDB and ensure it's running.
 3. Install Go if not already installed.
-4. Navigate to the project directory and run `go build main.go`.
+4. Navigate to the project directory and run `go mod tidy && go build -o Habit`.
 5. Start the Habit Tracker ./main
 
 
